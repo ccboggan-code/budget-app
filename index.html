@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Budget App</title>
+
+  <style>
+    :root {
+      --bg-main: #1e1e1e;
+      --bg-secondary: #252526;
+      --bg-tertiary: #2d2d2d;
+      --text-main: #e6e6e6;
+      --text-muted: #bdbdbd;
+      --border-soft: #3c3c3c;
+      --accent: #4fc3f7;
+      --danger: #ef5350;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    h1, h2, h3 {
+      margin-bottom: 10px;
+    }
+
+    input, select, button {
+      background-color: var(--bg-secondary);
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: var(--bg-tertiary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: var(--bg-secondary);
+    }
+
+    th, td {
+      border: 1px solid var(--border-soft);
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-tertiary);
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    .income {
+      color: #81c784;
+    }
+
+    .expense {
+      color: #e57373;
+    }
+
+    .flex {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .total {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Budget App</h1>
+
+  <!-- MONTH SELECTION -->
+<h2>Month</h2>
+<div class="flex">
+  <select id="yearPicker"></select>
+  <select id="monthPicker"></select>
+</div>
+
+  <!-- STARTING BALANCE -->
+  <h3>Monthly Starting Balance</h3>
+  <input
+    type="text"
+    inputmode="decimal"
+    id="startingBalance"
+    placeholder="$4,000.00"
+  />
+
+  <!-- ADD TRANSACTION -->
+  <h2>Add Transaction</h2>
+  <div class="flex">
+    <input
+      type="text"
+      id="description"
+      placeholder="Description"
+    />
+
+    <input
+      type="text"
+      inputmode="decimal"
+      id="amount"
+      placeholder="$0.00"
+    />
+
+    <select id="type">
+      <option value="income">Income</option>
+      <option value="expense">Expense</option>
+    </select>
+
+    <select id="category"></select>
+
+    <button>Add</button>
+  </div>
+
+  <!-- PLANNED BUDGET -->
+  <h2>Planned Monthly Budget</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Income Category</th>
+        <th>Planned</th>
+        <th>Expense Category</th>
+        <th>Planned</th>
+      </tr>
+    </thead>
+    <tbody id="plannedTable">
+      <!-- JS will inject rows here -->
+    </tbody>
+  </table>
+
+  <!-- TRANSACTIONS -->
+  <h2>Transactions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Category</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="transactionTable">
+      <!-- JS will inject rows here -->
+    </tbody>
+  </table>
+
+  <!-- SUMMARY -->
+  <div class="total" id="summary"></div>
+
+  <button id="clearAll">Clear All Data</button>
+
+  <script src="app.js"></script>
+</body>
+</html>
