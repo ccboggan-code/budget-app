@@ -13,6 +13,7 @@ const expenseCategories = [
   "Loans",
   "Power",
   "Water",
+  "Internet",
   "Subscriptions",
   "Fuel",
   "Insurance",
@@ -44,7 +45,7 @@ function parseCurrency(value) {
 ======================= */
 
 let budgetData = JSON.parse(localStorage.getItem("budgetData")) || {};
-let currentMonth = getCurrentMonth();
+let currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
 
 function getCurrentMonth() {
   return new Date().toISOString().slice(0, 7);
