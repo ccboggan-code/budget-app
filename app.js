@@ -339,6 +339,66 @@ function renderSummary() {
 }
 
 /* =======================
+   CATEGORY TOTALS
+======================= */
+
+function calculateCategoryTotals() {
+  const month = budgetData[currentMonth];
+  const totals = {};
+
+  // initialize totals
+  expenseCategories.forEach(cat => {
+    totals[cat] = 0;
+  });
+
+  // sum all expense transactions
+  month.transactions.forEach(t => {
+    if (t.type === "expense") {
+      if (!totals[t.category]) totals[t.category] = 0;
+      totals[t.category] += t.amount;
+    }
+  });
+
+  return totals;
+}
+
+function renderCategoryTotals() {
+  const container = document.getElementById("categoryTotals");
+  if (!container) return;
+
+  const planned = budgetData[currentMonth].planned;
+  const actualTotals = calculateCategoryTotals();
+
+  let html = "<h3>Category Totals</h3>";
+
+  expenseCategories.forEach(cat => {
+
+    const plannedAmount = planned[cat] || 0;
+    const actualAmount = actualTotals[cat] || 0;
+
+    const difference = plannedAmount - actualAmount;
+
+    let diffColor = "black";
+
+    if (difference > 0) diffColor = "green";
+    if (difference < 0) diffColor = "red";
+
+    html += `
+      <div style="margin-bottom:6px">
+        <strong>${cat}</strong><br>
+        Planned: ${currencyFormatter.format(plannedAmount)} |
+        Actual: ${currencyFormatter.format(actualAmount)} |
+        <span style="color:${diffColor}">
+          Difference: ${currencyFormatter.format(difference)}
+        </span>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/* =======================
    CORE
 ======================= */
 
@@ -354,6 +414,7 @@ function render() {
   renderTransactions();
   renderPlanned();
   renderSummary();
+  renderCategoryTotals();
 }
 
 init();
