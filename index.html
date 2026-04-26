@@ -87,44 +87,160 @@
       font-weight: bold;
       margin-top: 15px;
     }
+
+    /* =======================
+   MOBILE CARD LAYOUT
+======================= */
+
+#categoryTotals {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.category-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+/* =======================
+   TABS
+======================= */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+
+.tab.active {
+  background: var(--accent);
+  color: black;
+}
+
+/* =======================
+   TAB CONTENT
+======================= */
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* =======================
+   MOBILE IMPROVEMENTS
+======================= */
+
+body {
+  max-width: 600px;
+}
+
+table th:nth-child(3),
+table td:nth-child(3) {
+  text-align: center;
+}
+
+.flex input,
+.flex select {
+  flex: 1;
+  min-width: 80px;
+}
+
   </style>
 </head>
 
 <body>
 
-  <h1>Budget App</h1>
+<h1>Budget App</h1>
 
-  <!-- MONTH SELECTION -->
-<h2>Month</h2>
-<div class="flex">
-  <select id="yearPicker"></select>
-  <select id="monthPicker"></select>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="tab" onclick="switchTab('transactions')">Transactions</button>
+  <button class="tab" onclick="switchTab('summary')">Summary</button>
 </div>
 
-  <!-- STARTING BALANCE -->
-  <h3>Monthly Starting Balance</h3>
+<!-- DASHBOARD TAB -->
+<div id="dashboardTab" class="tab-content active">
+
+  <h2>Month</h2>
+  <div class="flex">
+    <select id="yearPicker"></select>
+    <select id="monthPicker"></select>
+  </div>
+
+  <h3>Starting Balance</h3>
   <input
     type="text"
     inputmode="decimal"
     id="startingBalance"
     placeholder="$4,000.00"
   />
+<h3>Add Transaction</h3>
+<div class="flex">
+  <input id="descriptionDash" placeholder="Description" />
+  <input id="amountDash" inputmode="decimal" placeholder="$0.00" />
 
-  <!-- ADD TRANSACTION -->
+  <select id="typeDash">
+    <option value="income">Income</option>
+    <option value="expense">Expense</option>
+  </select>
+
+  <select id="categoryDash"></select>
+
+  <button id="addBtnDash">Add</button>
+</div>
+  <div id="categoryTotals"></div>
+
+</div>
+
+<!-- TRANSACTIONS TAB -->
+<div id="transactionsTab" class="tab-content">
+
   <h2>Add Transaction</h2>
   <div class="flex">
-    <input
-      type="text"
-      id="description"
-      placeholder="Description"
-    />
+    <input id="description" placeholder="Description" />
 
-    <input
-      type="text"
-      inputmode="decimal"
-      id="amount"
-      placeholder="$0.00"
-    />
+    <input id="amount" inputmode="decimal" placeholder="$0.00" />
 
     <select id="type">
       <option value="income">Income</option>
@@ -133,49 +249,35 @@
 
     <select id="category"></select>
 
-    <button>Add</button>
+    <button id="addBtn">Add</button>
   </div>
 
-  <!-- PLANNED BUDGET -->
-  <h2>Planned Monthly Budget</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Income Category</th>
-        <th>Planned</th>
-        <th>Expense Category</th>
-        <th>Planned</th>
-      </tr>
-    </thead>
-    <tbody id="plannedTable">
-      <!-- JS will inject rows here -->
-    </tbody>
-  </table>
-
-  <!-- TRANSACTIONS -->
   <h2>Transactions</h2>
   <table>
     <thead>
       <tr>
-        <th>Description</th>
-        <th>Category</th>
-        <th>Type</th>
-        <th>Amount</th>
-        <th>Action</th>
+        <th>Desc</th>
+        <th>Cat</th>
+        <th>D/C</th>
+        <th>$</th>
+        <th></th>
       </tr>
     </thead>
-    <tbody id="transactionTable">
-      <!-- JS will inject rows here -->
-    </tbody>
+    <tbody id="transactionTable"></tbody>
   </table>
 
-  <!-- SUMMARY -->
-  <div class="total" id="summary"></div>
+</div>
 
-<div id="categoryTotals"></div>
+<!-- SUMMARY TAB -->
+<div id="summaryTab" class="tab-content">
+  <h2>Summary</h2>
+  <div id="summary"></div>
+  <div id="plannedContainer"></div>
 
   <button id="clearAll">Clear All Data</button>
+</div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>

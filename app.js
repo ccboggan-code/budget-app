@@ -1,33 +1,21 @@
 /* =======================
-   CATEGORIES
+   CONFIG
 ======================= */
 
+const STORAGE_KEY = "budgetDataSandbox";
+
 const incomeCategories = [
-  "Paycheck",
-  "Additional Income",
-  "Other"
+  "Paycheck", "Additional Income", "Other Income"
 ];
 
 const expenseCategories = [
-  "Mortgage",
-  "Loans",
-  "Power",
-  "Water",
-  "Internet",
-  "Subscriptions",
-  "Fuel",
-  "Insurance",
-  "Giving",
-  "Groceries",
-  "Shopping",
-  "Dining",
-  "Investments",
-  "Maintenance",
-  "Other"
+  "Mortgage","Loans","Power","Water","Internet","Subscriptions",
+  "Fuel","Insurance","Giving","Groceries","Shopping","Dining",
+  "Investments","Maintenance","Other Expense"
 ];
 
 /* =======================
-   CURRENCY HELPERS
+   HELPERS
 ======================= */
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -36,19 +24,21 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2
 });
 
-function parseCurrency(value) {
-  return Number(String(value).replace(/[^0-9.-]/g, "")) || 0;
+const $ = (id) => document.getElementById(id);
+
+function parseCurrency(val) {
+  return Number(String(val).replace(/[^0-9.-]/g, "")) || 0;
 }
 
 /* =======================
    STORAGE
 ======================= */
 
-let budgetData = JSON.parse(localStorage.getItem("budgetData")) || {};
-let currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+let budgetData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+let currentMonth = new Date().toISOString().slice(0, 7);
 
-function getCurrentMonth() {
-  return new Date().toISOString().slice(0, 7);
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData));
 }
 
 function getPreviousMonth(month) {
@@ -68,10 +58,11 @@ function ensureMonth(month) {
         : {}
     };
   }
-}
 
-function save() {
-  localStorage.setItem("budgetData", JSON.stringify(budgetData));
+  // FIX: ensure planned exists
+  if (!budgetData[month].planned) {
+    budgetData[month].planned = {};
+  }
 }
 
 /* =======================
@@ -79,93 +70,103 @@ function save() {
 ======================= */
 
 function init() {
-  const picker = document.getElementById("monthPicker");
-  picker.value = currentMonth;
-
-initMonthYearPickers();
-
   ensureMonth(currentMonth);
 
-  const startingInput = document.getElementById("startingBalance");
-  startingInput.value = currencyFormatter.format(
-    budgetData[currentMonth].startingBalance
-  );
+  initPickers();
+  initInputs();
+  initEvents();
 
-  startingInput.addEventListener("focus", () => {
-    startingInput.value = parseCurrency(startingInput.value) || "";
-  });
+  render();
+}
 
-  startingInput.addEventListener("blur", () => {
-    const val = parseCurrency(startingInput.value);
-    budgetData[currentMonth].startingBalance = val;
-    startingInput.value = currencyFormatter.format(val);
-    save();
-    renderSummary();
-  });
+/* =======================
+   INIT HELPERS
+======================= */
 
-  const amountInput = document.getElementById("amount");
+function initPickers() {
+  const year = $("yearPicker");
+  const month = $("monthPicker");
 
-  amountInput.addEventListener("focus", () => {
-    amountInput.value = parseCurrency(amountInput.value) || "";
-  });
+  const now = new Date();
+  const currentYear = now.getFullYear();
 
-  amountInput.addEventListener("blur", () => {
-    const val = parseCurrency(amountInput.value);
-    amountInput.value = val ? currencyFormatter.format(val) : "";
-  });
-
-  updateCategoryOptions();
-
-document.getElementById("type").addEventListener("change", () => {
-  updateCategoryOptions();
-});
-
-document.querySelector("button").addEventListener("click", addTransaction);
-
-// Populate year and month dropdowns
-function initMonthYearPickers() {
-  const yearSelect = document.getElementById("yearPicker");
-  const monthSelect = document.getElementById("monthPicker");
-
-  const currentYear = new Date().getFullYear();
-
-  // Allow 5 years past and 5 years future
   for (let y = currentYear - 5; y <= currentYear + 5; y++) {
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y;
-    yearSelect.appendChild(opt);
+    year.appendChild(new Option(y, y));
   }
 
-  const months = [
-    "01", "02", "03", "04", "05", "06",
-    "07", "08", "09", "10", "11", "12"
-  ];
-  months.forEach((m, idx) => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = new Date(0, idx).toLocaleString("en-US", { month: "long" });
-    monthSelect.appendChild(opt);
-  });
+  for (let i = 0; i < 12; i++) {
+    const m = String(i + 1).padStart(2, "0");
+    const name = new Date(0, i).toLocaleString("en-US", { month: "long" });
+    month.appendChild(new Option(name, m));
+  }
 
-  // Default to current month/year
-  yearSelect.value = currentYear;
-  monthSelect.value = String(new Date().getMonth() + 1).padStart(2, "0");
+  year.value = currentYear;
+  month.value = String(now.getMonth() + 1).padStart(2, "0");
 
-  // Event listener to switch month
-  function onChange() {
-    currentMonth = `${yearSelect.value}-${monthSelect.value}`;
+  function updateMonth() {
+    currentMonth = `${year.value}-${month.value}`;
     ensureMonth(currentMonth);
-    document.getElementById("startingBalance").value =
+
+    $("startingBalance").value =
       currencyFormatter.format(budgetData[currentMonth].startingBalance);
+
     render();
   }
 
-  yearSelect.addEventListener("change", onChange);
-  monthSelect.addEventListener("change", onChange);
+  year.addEventListener("change", updateMonth);
+  month.addEventListener("change", updateMonth);
 }
 
-  render();
+function initInputs() {
+  const start = $("startingBalance");
+
+  start.value = currencyFormatter.format(
+    budgetData[currentMonth].startingBalance
+  );
+
+  start.addEventListener("focus", () => {
+    start.value = parseCurrency(start.value) || "";
+  });
+
+  start.addEventListener("blur", () => {
+    const val = parseCurrency(start.value);
+    budgetData[currentMonth].startingBalance = val;
+    start.value = currencyFormatter.format(val);
+    save();
+    render();
+  });
+
+  setupAmountInput("amount");
+  setupAmountInput("amountDash");
+}
+
+function setupAmountInput(id) {
+  const el = $(id);
+  if (!el) return;
+
+  el.addEventListener("focus", () => {
+    el.value = parseCurrency(el.value) || "";
+  });
+
+  el.addEventListener("blur", () => {
+    const val = parseCurrency(el.value);
+    el.value = val ? currencyFormatter.format(val) : "";
+  });
+}
+
+function initEvents() {
+  $("addBtn")?.addEventListener("click", () => addTransaction());
+
+  $("addBtnDash")?.addEventListener("click", () =>
+    addTransaction("dash")
+  );
+
+  $("type")?.addEventListener("change", updateCategoryOptions);
+  $("typeDash")?.addEventListener("change", updateCategoryOptions);
+
+  $("clearAll")?.addEventListener("click", clearAll);
+
+  updateCategoryOptions();
 }
 
 /* =======================
@@ -173,46 +174,41 @@ function initMonthYearPickers() {
 ======================= */
 
 function updateCategoryOptions() {
-  const type = document.getElementById("type").value;
-  const select = document.getElementById("category");
-  select.innerHTML = "";
-
-  const list = type === "income" ? incomeCategories : expenseCategories;
-
-  list.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat;
-    option.textContent = cat;
-    select.appendChild(option);
-  });
+  updateSelect("type", "category");
+  updateSelect("typeDash", "categoryDash");
 }
 
-/* =======================
-   MONTH SWITCH
-======================= */
+function updateSelect(typeId, selectId) {
+  const typeEl = $(typeId);
+  const select = $(selectId);
+  if (!typeEl || !select) return;
 
-function changeMonth() {
-  currentMonth = document.getElementById("monthPicker").value;
-  ensureMonth(currentMonth);
+  const list =
+    typeEl.value === "income" ? incomeCategories : expenseCategories;
 
-  const startingInput = document.getElementById("startingBalance");
-  startingInput.value = currencyFormatter.format(
-    budgetData[currentMonth].startingBalance
-  );
+  select.innerHTML = "";
 
-  save();
-  render();
+  list.forEach(cat => {
+    select.appendChild(new Option(cat, cat));
+  });
 }
 
 /* =======================
    TRANSACTIONS
 ======================= */
 
-function addTransaction() {
-  const description = document.getElementById("description").value.trim();
-  const amount = parseCurrency(document.getElementById("amount").value);
-  const type = document.getElementById("type").value;
-  const category = document.getElementById("category").value;
+function addTransaction(source = "main") {
+  const ids =
+    source === "dash"
+      ? ["descriptionDash", "amountDash", "typeDash", "categoryDash"]
+      : ["description", "amount", "type", "category"];
+
+  const [d, a, t, c] = ids.map($);
+
+  const description = d.value.trim();
+  const amount = parseCurrency(a.value);
+  const type = t.value;
+  const category = c.value;
 
   if (!description || !amount) {
     alert("Missing fields");
@@ -227,8 +223,8 @@ function addTransaction() {
     category
   });
 
-  document.getElementById("description").value = "";
-  document.getElementById("amount").value = "";
+  d.value = "";
+  a.value = "";
 
   save();
   render();
@@ -243,71 +239,77 @@ function deleteTransaction(id) {
 }
 
 function renderTransactions() {
-  const table = document.getElementById("transactionTable");
+  const table = $("transactionTable");
+  if (!table) return;
+
   table.innerHTML = "";
 
   budgetData[currentMonth].transactions.forEach(t => {
-    const row = document.createElement("tr");
-    const signedAmount =
-      t.type === "expense" ? -t.amount : t.amount;
+    const amt = t.type === "expense" ? -t.amount : t.amount;
 
-    row.innerHTML = `
-      <td>${t.description}</td>
-      <td>${t.category}</td>
-      <td class="${t.type}">${t.type}</td>
-      <td>${currencyFormatter.format(signedAmount)}</td>
-      <td><button onclick="deleteTransaction(${t.id})">Delete</button></td>
+    table.innerHTML += `
+      <tr>
+        <td>${t.description}</td>
+        <td>${t.category}</td>
+        <td class="${t.type}">${t.type === "expense" ? "D" : "C"}</td>
+        <td>${currencyFormatter.format(amt)}</td>
+        <td><button onclick="deleteTransaction(${t.id})">Delete</button></td>
+      </tr>
     `;
-    table.appendChild(row);
   });
 }
 
 /* =======================
-   PLANNED BUDGET
+   PLANNED
 ======================= */
 
 function renderPlanned() {
-  const table = document.getElementById("plannedTable");
-  table.innerHTML = "";
+  const container = $("plannedContainer");
+  if (!container) return;
 
   const planned = budgetData[currentMonth].planned;
-  const rows = Math.max(incomeCategories.length, expenseCategories.length);
 
-  for (let i = 0; i < rows; i++) {
-    const inc = incomeCategories[i] || "";
-    const exp = expenseCategories[i] || "";
+  [...incomeCategories, ...expenseCategories].forEach(cat => {
+    if (planned[cat] === undefined) planned[cat] = 0;
+  });
 
-    if (inc && planned[inc] === undefined) planned[inc] = 0;
-    if (exp && planned[exp] === undefined) planned[exp] = 0;
+  let html = `<h3>Planned Budget</h3>
+  <div class="planned-grid">`;
 
-    const row = document.createElement("tr");
+  html += `<div class="planned-column"><h4>Expenses</h4>`;
+  expenseCategories.forEach(cat => {
+    html += plannedRow(cat, planned[cat]);
+  });
+  html += `</div>`;
 
-    row.innerHTML = `
-      <td>${inc}</td>
-      <td>
-        ${inc ? `<input type="text" inputmode="decimal"
-          value="${currencyFormatter.format(planned[inc])}"
-          onfocus="this.value=parseCurrency(this.value)||''"
-          onblur="updatePlanned('${inc}', this.value)">` : ""}
-      </td>
-      <td>${exp}</td>
-      <td>
-        ${exp ? `<input type="text" inputmode="decimal"
-          value="${currencyFormatter.format(planned[exp])}"
-          onfocus="this.value=parseCurrency(this.value)||''"
-          onblur="updatePlanned('${exp}', this.value)">` : ""}
-      </td>
-    `;
+  html += `<div class="planned-column"><h4>Income</h4>`;
+  incomeCategories.forEach(cat => {
+    html += plannedRow(cat, planned[cat]);
+  });
+  html += `</div>`;
 
-    table.appendChild(row);
-  }
+  html += `</div>`;
+
+  container.innerHTML = html;
 }
 
-function updatePlanned(cat, value) {
-  const num = parseCurrency(value);
-  budgetData[currentMonth].planned[cat] = num;
+function plannedRow(cat, val) {
+  return `
+    <div class="planned-row">
+      <span class="planned-label">${cat}</span>
+      <input type="text"
+        class="planned-input"
+        value="${currencyFormatter.format(val)}"
+        onfocus="this.value=parseCurrency(this.value)||''"
+        onblur="updatePlanned('${cat}', this.value)">
+    </div>
+  `;
+}
+
+function updatePlanned(cat, val) {
+  budgetData[currentMonth].planned[cat] = parseCurrency(val);
   save();
-  renderSummary();
+  render(); // FIX
 }
 
 /* =======================
@@ -315,87 +317,107 @@ function updatePlanned(cat, value) {
 ======================= */
 
 function renderSummary() {
-  const month = budgetData[currentMonth];
-  let netActivity = 0;
+  const m = budgetData[currentMonth];
 
-  month.transactions.forEach(t => {
-    netActivity += t.type === "income" ? t.amount : -t.amount;
+  let net = 0;
+  m.transactions.forEach(t => {
+    net += t.type === "income" ? t.amount : -t.amount;
   });
 
-  const starting = month.startingBalance;
-  const ending = starting + netActivity;
-  const transfer = ending - starting;
+  const end = m.startingBalance + net;
 
-  document.getElementById("summary").innerHTML = `
-    <strong>${currentMonth}</strong><br>
-    Starting Balance: ${currencyFormatter.format(starting)}<br>
-    Net Activity: ${currencyFormatter.format(netActivity)}<br>
-    Ending Balance: ${currencyFormatter.format(ending)}<br><br>
-    <strong>
-      ${transfer >= 0 ? "Transfer to Savings:" : "Transfer from Savings:"}
-    </strong>
-    ${currencyFormatter.format(Math.abs(transfer))}
-  `;
+$("summary").innerHTML = `
+  <div><strong>${currentMonth}</strong></div>
+
+  <div class="summary-row">
+    <span class="summary-label">Starting</span>
+    <span class="summary-value">${currencyFormatter.format(m.startingBalance)}</span>
+  </div>
+
+  <div class="summary-row">
+    <span class="summary-label">Net</span>
+    <span class="summary-value">${currencyFormatter.format(net)}</span>
+  </div>
+
+  <div class="summary-row">
+    <span class="summary-label">Ending</span>
+    <span class="summary-value">${currencyFormatter.format(end)}</span>
+  </div>
+`;
 }
 
 /* =======================
-   CATEGORY TOTALS
+   CATEGORY TOTALS (DASHBOARD)
 ======================= */
 
-function calculateCategoryTotals() {
-  const month = budgetData[currentMonth];
-  const totals = {};
-
-  // initialize totals
-  expenseCategories.forEach(cat => {
-    totals[cat] = 0;
-  });
-
-  // sum all expense transactions
-  month.transactions.forEach(t => {
-    if (t.type === "expense") {
-      if (!totals[t.category]) totals[t.category] = 0;
-      totals[t.category] += t.amount;
-    }
-  });
-
-  return totals;
-}
-
 function renderCategoryTotals() {
-  const container = document.getElementById("categoryTotals");
+  const container = $("categoryTotals");
   if (!container) return;
 
   const planned = budgetData[currentMonth].planned;
-  const actualTotals = calculateCategoryTotals();
 
-  let html = "<h3>Category Totals</h3>";
+  const expenseTotals = {};
+  const incomeTotals = {};
 
-  expenseCategories.forEach(cat => {
+  expenseCategories.forEach(c => expenseTotals[c] = 0);
+  incomeCategories.forEach(c => incomeTotals[c] = 0);
 
-    const plannedAmount = planned[cat] || 0;
-    const actualAmount = actualTotals[cat] || 0;
-
-    const difference = plannedAmount - actualAmount;
-
-    let diffColor = "black";
-
-    if (difference > 0) diffColor = "green";
-    if (difference < 0) diffColor = "red";
-
-    html += `
-      <div style="margin-bottom:6px">
-        <strong>${cat}</strong><br>
-        Planned: ${currencyFormatter.format(plannedAmount)} |
-        Actual: ${currencyFormatter.format(actualAmount)} |
-        <span style="color:${diffColor}">
-          Difference: ${currencyFormatter.format(difference)}
-        </span>
-      </div>
-    `;
+  budgetData[currentMonth].transactions.forEach(t => {
+if (t.type === "expense") {
+  if (expenseTotals[t.category] === undefined) expenseTotals[t.category] = 0;
+  expenseTotals[t.category] += t.amount;
+} else {
+  if (incomeTotals[t.category] === undefined) incomeTotals[t.category] = 0;
+  incomeTotals[t.category] += t.amount;
+}
   });
 
+  let html = "<h3>Dashboard</h3><div class='card-grid'>";
+
+  // EXPENSES (LEFT)
+  html += `<div class="card-column">`;
+  expenseCategories.forEach(cat => {
+    html += categoryCard(cat, planned[cat], expenseTotals[cat], "expense");
+  });
+  html += `</div>`;
+
+  // INCOME (RIGHT)
+  html += `<div class="card-column">`;
+  incomeCategories.forEach(cat => {
+    html += categoryCard(cat, planned[cat], incomeTotals[cat], "income");
+  });
+  html += `</div>`;
+
+  html += `</div>`;
+
   container.innerHTML = html;
+}
+
+function categoryCard(cat, planned, actual, type) {
+  planned = planned || 0;
+  actual = actual || 0;
+
+  const diff = type === "expense"
+    ? planned - actual
+    : actual - planned;
+
+  const color = diff >= 0 ? "var(--accent)" : "var(--danger)";
+
+  return `
+    <div class="category-card card-flex">
+
+      <div class="card-left">
+        <div class="card-title">${cat}</div>
+        <div class="card-sub">Planned: ${currencyFormatter.format(planned)}</div>
+        <div class="card-sub">Actual: ${currencyFormatter.format(actual)}</div>
+      </div>
+
+      <div class="card-right" style="color:${color}">
+        ${currencyFormatter.format(diff)}
+      </div>
+
+    </div>
+  `;
 }
 
 /* =======================
@@ -403,7 +425,8 @@ function renderCategoryTotals() {
 ======================= */
 
 function clearAll() {
-  if (!confirm("Delete all months?")) return;
+  if (!confirm("Delete all data?")) return;
+
   budgetData = {};
   ensureMonth(currentMonth);
   save();
@@ -416,5 +439,29 @@ function render() {
   renderSummary();
   renderCategoryTotals();
 }
+
+/* =======================
+   UI
+======================= */
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach(b =>
+    b.classList.remove("active")
+  );
+
+  document.querySelectorAll(".tab-content").forEach(c =>
+    c.classList.remove("active")
+  );
+
+  document
+    .querySelector(`button[onclick="switchTab('${tab}')"]`)
+    ?.classList.add("active");
+
+  $(tab + "Tab")?.classList.add("active");
+}
+
+/* =======================
+   START
+======================= */
 
 init();
