@@ -1,12 +1,83 @@
 /* =======================
-   LAYOUT BASE
+   GLOBAL / BASE
 ======================= */
+
+html {
+  font-size: 18px; /* scales everything */
+}
 
 body {
   max-width: 600px;
   margin: 20px auto;
   padding: 0 12px;
-  font-size: 16px; /* 🔥 FIX: base readable size */
+  font-size: 1rem;
+}
+
+/* =======================
+   INPUTS / BUTTONS / SELECTS
+======================= */
+
+input,
+select,
+button {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 12px;
+  font-size: 16px; /* 🔥 prevents tiny mobile text */
+  border-radius: 6px;
+}
+
+/* prevent iOS zoom on focus */
+input,
+select {
+  font-size: 16px;
+}
+
+/* =======================
+   FLEX FORM (STACKED)
+======================= */
+
+.flex {
+  display: flex;
+  flex-direction: column; /* 🔥 stack everything */
+  gap: 10px;
+}
+
+/* =======================
+   TABS
+======================= */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 14px;
+  font-size: 16px; /* 🔥 bigger text */
+}
+
+/* =======================
+   PICKERS (MONTH/YEAR)
+======================= */
+
+#yearPicker,
+#monthPicker {
+  font-size: 16px;
+  padding: 10px;
+}
+
+/* =======================
+   STARTING BALANCE
+======================= */
+
+#startingBalance {
+  font-size: 18px;
+  padding: 12px;
+  width: 100%;
 }
 
 /* =======================
@@ -15,7 +86,7 @@ body {
 
 .planned-grid {
   display: flex;
-  flex-direction: column; /* 🔥 stack on mobile */
+  flex-direction: column;
   gap: 16px;
   margin-top: 20px;
 }
@@ -43,12 +114,12 @@ body {
 }
 
 /* =======================
-   CARD GRID (DASHBOARD)
+   CARD GRID
 ======================= */
 
 .card-grid {
   display: flex;
-  flex-direction: column; /* 🔥 no side-by-side on phone */
+  flex-direction: column;
   gap: 12px;
   margin-top: 10px;
 }
@@ -62,18 +133,18 @@ body {
 ======================= */
 
 .category-card {
-  background: var(--bg-secondary);
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   padding: 14px;
 }
 
-/* 🔥 THIS FIXES YOUR ALIGNMENT */
+/* layout */
 .card-flex {
   display: flex;
   align-items: center;
 }
 
+/* left side */
 .card-left {
   display: flex;
   flex-direction: column;
@@ -82,17 +153,17 @@ body {
 
 .card-title {
   font-weight: bold;
-  font-size: 16px; /* 🔥 bigger */
+  font-size: 16px;
 }
 
 .card-sub {
-  font-size: 14px; /* 🔥 bigger */
+  font-size: 14px;
   color: var(--text-muted);
 }
 
-/* 🔥 THIS FORCES RIGHT ALIGN */
+/* right side (difference) */
 .card-right {
-  margin-left: auto;
+  margin-left: auto; /* 🔥 forces right */
   text-align: right;
   font-size: 18px;
   font-weight: bold;
