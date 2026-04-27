@@ -1,86 +1,76 @@
+/* =======================
+   LAYOUT BASE
+======================= */
+
+body {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 0 12px;
+  font-size: 16px; /* 🔥 FIX: base readable size */
+}
+
+/* =======================
+   PLANNED GRID
+======================= */
+
 .planned-grid {
   display: flex;
-  gap: 20px;
+  flex-direction: column; /* 🔥 stack on mobile */
+  gap: 16px;
   margin-top: 20px;
 }
 
 .planned-column {
-  flex: 1;
+  width: 100%;
 }
 
 .planned-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 16px;
 }
 
-.planned-row input {
-  width: 100px;
-  text-align: right;
+.planned-label {
+  flex: 1;
 }
+
+.planned-input {
+  width: 120px;
+  text-align: right;
+  font-size: 16px;
+}
+
+/* =======================
+   CARD GRID (DASHBOARD)
+======================= */
 
 .card-grid {
   display: flex;
+  flex-direction: column; /* 🔥 no side-by-side on phone */
   gap: 12px;
   margin-top: 10px;
 }
 
 .card-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 }
+
+/* =======================
+   CATEGORY CARD
+======================= */
 
 .category-card {
-  border: 1px solid #ccc;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
   border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #fff;
+  padding: 14px;
 }
 
+/* 🔥 THIS FIXES YOUR ALIGNMENT */
 .card-flex {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.card-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.card-title {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.card-sub {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.card-right {
-  margin-left: auto;
-  text-align: right;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-@media (max-width: 600px) {
-  .card-grid {
-    flex-direction: column;
-  }
-
-  .planned-grid {
-    flex-direction: column;
-  }
-}
-
-.card-flex {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -92,44 +82,38 @@
 
 .card-title {
   font-weight: bold;
+  font-size: 16px; /* 🔥 bigger */
 }
 
 .card-sub {
-  font-size: 12px;
+  font-size: 14px; /* 🔥 bigger */
   color: var(--text-muted);
 }
 
+/* 🔥 THIS FORCES RIGHT ALIGN */
 .card-right {
+  margin-left: auto;
+  text-align: right;
   font-size: 18px;
   font-weight: bold;
 }
 
-.planned-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.planned-label {
-  text-align: left;
-}
-
-.planned-input {
-  width: 110px;
-  text-align: right;
-}
+/* =======================
+   SUMMARY
+======================= */
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 6px;
+  padding: 6px 0;
+  font-size: 16px;
 }
 
 .summary-label {
-  text-align: left;
+  flex: 1;
 }
 
 .summary-value {
   text-align: right;
+  min-width: 100px;
 }
